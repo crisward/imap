@@ -1,0 +1,9 @@
+name: imap
+version: 0.1.0
+
+authors:
+  - Cris Ward <cris@duodesign.co.uk>
+
+crystal: 0.23.1
+
+license: MIT

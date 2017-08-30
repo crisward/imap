@@ -22,8 +22,8 @@ mailboxes = imap.get_mailboxes
 if mailboxes.size > 0
   mailbox = mailboxes[0]
   imap.select(mailbox)
-  message_count = imap.get_message_count
-  puts "There are #{message_count} message in #{mailbox}"
+  status = imap.status(mailbox, ["MESSAGES", "UNSEEN"])
+  puts "There are #{status["MESSAGES"]} message in #{mailbox} #{status["UNSEEN"]} unread."
 end
 imap.close
 ```

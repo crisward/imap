@@ -105,6 +105,33 @@ module Imap
       return 0
     end
 
+    # Sends a STATUS command, and returns the status of the indicated
+    # `mailbox`. `attr` is a list of one or more attributes whose
+    # statuses are to be requested.  Supported attributes include:
+    #
+    #   * MESSAGES:: the number of messages in the mailbox.
+    #   * RECENT:: the number of recent messages in the mailbox.
+    #   * UNSEEN:: the number of unseen messages in the mailbox.
+    #
+    # The return value is a hash of attributes. For example:
+    # ```
+    #   p imap.status("inbox", ["MESSAGES", "RECENT"])
+    #   #=> {"RECENT"=>0, "MESSAGES"=>44}
+    #```
+    def status(mailbox, attr : Array(String))
+      param = "(#{attr.join(" ")})"
+      res = command("STATUS", mailbox, param)
+      vals = Hash(String, Int32).new
+      counts = res[0].match(/\(([^)]+)\)/)
+      if counts && counts[1]
+        counts[1].scan(/\w+ \d+/) do |match|
+          key, value = match[0].to_s.split(" ", 2)
+          vals[key] = value.to_i
+        end
+      end
+      return vals
+    end
+
     private def process_mail_headers(res)
       ip = nil
       from = nil

@@ -32,9 +32,10 @@ module Imap
       end
     end
 
-    private def command(command : String, parameter : String? = nil)
-      command_and_parameter = command
-      command_and_parameter += " " + parameter if parameter
+    private def command(command : String, *parameters)
+      command_and_parameter = "tag #{command}"
+      params = parameters.join(" ")
+      command_and_parameter += " #{params}" if params && params.size > 0
       @command_history << command_and_parameter
       @logger.info "=====> #{command_and_parameter}"
       socket << command_and_parameter << "\r\n"
@@ -43,19 +44,39 @@ module Imap
     end
 
     private def login(username, password)
-      command("tag login #{username} #{password}")
+      command("login", username, password)
     end
 
-    # sets the current mailbox
-    def set_mailbox(mailbox)
+    # Sends a SELECT command to select a +mailbox+ so that messages
+    # in the +mailbox+ can be accessed.
+    def select(mailbox)
       @mailbox = mailbox
-      command("tag SELECT #{mailbox}")
+      command("SELECT", mailbox)
+    end
+
+    # Sends a EXAMINE command to select a +mailbox+ so that messages
+    # in the +mailbox+ can be accessed.  Behaves the same as #select(),
+    # except that the selected +mailbox+ is identified as read-only.
+    def examine(mailbox)
+      @mailbox = mailbox
+      command("EXAMINE", mailbox)
+    end
+
+    # Sends a DELETE command to remove the +mailbox+.
+    def delete(mailbox)
+      command("DELETE", mailbox)
+    end
+
+    # Sends a RENAME command to change the name of the +mailbox+ to
+    # +newname+.
+    def rename(mailbox, newname)
+      command("RENAME", mailbox, newname)
     end
 
     # Returns an array of mailbox names
     def get_mailboxes : Array(String)
       mailboxes = [] of String
-      res = command(%{tag LIST "" "*"})
+      res = command(%{LIST "" "*"})
       res.each do |line|
         if line =~ /HasNoChildren/
           name = line.match(/"([^"]+)"$/)
@@ -71,7 +92,7 @@ module Imap
       if !mailbox
         raise "No Mailbox set"
       end
-      res = command("tag STATUS #{mailbox} (MESSAGES)")
+      res = command("STATUS #{mailbox} (MESSAGES)")
       # eg (MESSAGES 3)
       res.each do |line|
         if line =~ /MESSAGES/
@@ -125,7 +146,7 @@ module Imap
 
     # Closes the imap connection
     def close
-      command("tag LOGOUT")
+      command("LOGOUT")
     end
   end
 end

@@ -21,7 +21,7 @@ imap = Imap::Client.new(host: "imap.gmail.com", port: 993, username: "email@gmai
 mailboxes = imap.get_mailboxes
 if mailboxes.size > 0
   mailbox = mailboxes[0]
-  imap.set_mailbox(mailbox)
+  imap.select(mailbox)
   message_count = imap.get_message_count
   puts "There are #{message_count} message in #{mailbox}"
 end

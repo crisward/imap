@@ -28,6 +28,11 @@ end
 imap.close
 ```
 
+## Testing
+
+Need to start writing tests.
+* https://github.com/ruby/ruby/tree/21e4ade56b4261c549fd03f96f4430946d028bea/test/net/imap for inspiration
+
 ## Contributing
 
 1. Fork it ( https://github.com/crisward/imap/fork )

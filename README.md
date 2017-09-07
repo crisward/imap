@@ -32,6 +32,7 @@ imap.close
 
 Need to start writing tests.
 * https://github.com/ruby/ruby/tree/ruby_2_4/test/net/imap for inspiration
+* https://github.com/tedious/DovecotTesting
 
 ## Contributing
 

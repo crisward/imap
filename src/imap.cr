@@ -6,13 +6,11 @@ module Imap
   class Client
     @socket : TCPSocket | OpenSSL::SSL::Socket::Client | Nil = nil
     @logger : Logger
-    @mailbox : String?
 
     def initialize(host = "imap.gmail.com", port = 993, username = "", password = "", loglevel = Logger::ERROR)
       @logger = Logger.new(STDOUT)
       @logger.level = loglevel
       @mailboxes = [] of String
-      @mailbox = nil
 
       @command_history = [] of String
       @socket = TCPSocket.new(host, port)
@@ -50,7 +48,6 @@ module Imap
     # Sends a SELECT command to select a +mailbox+ so that messages
     # in the +mailbox+ can be accessed.
     def select(mailbox)
-      @mailbox = mailbox
       command("SELECT", mailbox)
     end
 
@@ -58,7 +55,6 @@ module Imap
     # in the +mailbox+ can be accessed.  Behaves the same as #select(),
     # except that the selected +mailbox+ is identified as read-only.
     def examine(mailbox)
-      @mailbox = mailbox
       command("EXAMINE", mailbox)
     end
 
@@ -73,8 +69,9 @@ module Imap
       command("RENAME", mailbox, newname)
     end
 
+
     # Returns an array of mailbox names
-    def get_mailboxes : Array(String)
+    def list : Array(String)
       mailboxes = [] of String
       res = command(%{LIST "" "*"})
       res.each do |line|
@@ -84,25 +81,6 @@ module Imap
         end
       end
       return mailboxes
-    end
-
-    # Returns the number of messages in the current mailbox
-    def get_message_count
-      mailbox = @mailbox
-      if !mailbox
-        raise "No Mailbox set"
-      end
-      res = command("STATUS #{mailbox} (MESSAGES)")
-      # eg (MESSAGES 3)
-      res.each do |line|
-        if line =~ /MESSAGES/
-          match = line.match(/MESSAGES ([0-9]+)/)
-          if match
-            return match[1].to_i
-          end
-        end
-      end
-      return 0
     end
 
     # Sends a STATUS command, and returns the status of the indicated
@@ -131,7 +109,7 @@ module Imap
       end
       return vals
     end
-
+    
     private def process_mail_headers(res)
       ip = nil
       from = nil

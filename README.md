@@ -18,7 +18,7 @@ dependencies:
 require "imap"
 
 imap = Imap::Client.new(host: "imap.gmail.com", port: 993, username: "email@gmail.com", password: "*******")
-mailboxes = imap.get_mailboxes
+mailboxes = imap.list
 if mailboxes.size > 0
   mailbox = mailboxes[0]
   imap.select(mailbox)
